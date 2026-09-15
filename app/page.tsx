@@ -34,14 +34,37 @@ export default async function HomePage() {
   return (
     <>
       <header className="site-header">
-        <h1>Бесплатные парковки Москвы</h1>
-        <p>Собирается автоматически из телеграм-канала · {parkings.length} мест на карте</p>
+        <div className="header-inner">
+          <div className="brand">
+            <span className="mark">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M12 2C7.6 2 4 5.6 4 10c0 6 8 12 8 12s8-6 8-12c0-4.4-3.6-8-8-8Z"
+                  fill="#FAFAFA"
+                />
+                <circle cx="12" cy="10" r="3" fill="#B4573C" />
+              </svg>
+            </span>
+            <div>
+              <h1>Бесплатные парковки Москвы</h1>
+              <p>Собирается автоматически из телеграм-канала</p>
+            </div>
+          </div>
+          <span className="count-pill">
+            <span className="dot" />
+            {parkings.length} мест на карте
+          </span>
+        </div>
       </header>
       <main>
         <div className="map-wrapper">
           <MapClientWrapper parkings={parkings} />
         </div>
         <div className="list-wrapper">
+          <div className="list-head">
+            <h2>Список мест</h2>
+            <span className="sort">Сначала новые</span>
+          </div>
           <ParkingList parkings={parkings} />
         </div>
       </main>
