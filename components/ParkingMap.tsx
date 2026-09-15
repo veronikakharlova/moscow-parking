@@ -44,20 +44,30 @@ function loadLeaflet(): Promise<void> {
 
 export default function ParkingMap({
   parkings,
-  onHoverChange,
+  selectedId = null,
+  onSelect,
 }: {
   parkings: ParkingRow[];
-  // Сообщает наружу, какая парковка сейчас под курсором/выбрана на карте —
+  selectedId?: number | null;
+  // Сообщает наружу, какую парковку выбрали кликом по маркеру —
   // используется, чтобы подсветить ту же карточку в списке справа
-  onHoverChange?: (id: number | null) => void;
+  onSelect?: (id: number | null) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
+  const markersRef = useRef<Map<number, any>>(new Map());
+  const selectedIdRef = useRef<number | null>(selectedId);
 
   const withCoords = parkings.filter(
     (p): p is ParkingRow & { lat: number; lng: number } => p.lat !== null && p.lng !== null
   );
   const hasCoords = withCoords.length > 0;
+
+  // Держим актуальное значение selectedId в ref, чтобы обработчик клика
+  // по маркеру (созданный один раз) не "замерзал" на старом значении
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+  }, [selectedId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -100,26 +110,35 @@ export default function ParkingMap({
           maxZoom: 19,
         }).addTo(map);
 
+        markersRef.current = new Map();
+
         withCoords.forEach((p) => {
           const popupHtml = p.source_url
             ? `<b>${escapeHtml(p.address)}</b><br/><a href="${p.source_url}" target="_blank" rel="noreferrer">Открыть на карте →</a>`
             : `<b>${escapeHtml(p.address)}</b>`;
 
-          const marker = L.marker([p.lat, p.lng], { icon }).addTo(map).bindPopup(popupHtml);
+          // autoPan: false — открытие попапа не должно сдвигать/скроллить карту,
+          // это тот же принцип, что и отказ от автопрокрутки списка
+          const marker = L.marker([p.lat, p.lng], { icon })
+            .addTo(map)
+            .bindPopup(popupHtml, { autoPan: false });
 
-          // Навели курсор на маркер или кликнули по нему — подсвечиваем
-          // ту же парковку в списке справа
-          marker.on("mouseover", () => onHoverChange?.(p.id));
-          marker.on("mouseout", () => onHoverChange?.(null));
-          marker.on("click", () => onHoverChange?.(p.id));
+          markersRef.current.set(p.id, marker);
+
+          marker.on("click", () => {
+            const next = selectedIdRef.current === p.id ? null : p.id;
+            onSelect?.(next);
+          });
         });
 
-        map.on("popupclose", () => onHoverChange?.(null));
+        // Клик по пустому месту на карте — снимаем выделение
+        map.on("click", () => onSelect?.(null));
       })
       .catch((err) => console.error(err));
 
     return () => {
       cancelled = true;
+      markersRef.current.clear();
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -127,6 +146,20 @@ export default function ParkingMap({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parkings, hasCoords]);
+
+  // Реагируем на выбор карточки в списке — открываем попап нужного маркера,
+  // без панорамирования карты (см. autoPan: false выше)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (selectedId == null) {
+      map.closePopup();
+      return;
+    }
+
+    markersRef.current.get(selectedId)?.openPopup();
+  }, [selectedId]);
 
   if (!hasCoords) {
     return (

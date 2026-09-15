@@ -13,23 +13,23 @@ const ParkingMap = dynamic(() => import("./ParkingMap"), {
   loading: () => <div className="map-container" style={{ background: "#f6f4f1" }} />,
 });
 
-// Общий "родитель" для карты и списка: держит, какая парковка сейчас
-// выделена (навели/кликнули на маркер на карте), и передаёт это в список,
-// чтобы соответствующая карточка подсвечивалась.
+// Общий "родитель" для карты и списка: держит, какая парковка сейчас выбрана,
+// и передаёт это в оба компонента — клик по карточке подсвечивает маркер,
+// клик по маркеру подсвечивает карточку. Без автопрокрутки в обе стороны.
 export default function ParkingExplorer({ parkings }: { parkings: ParkingRow[] }) {
-  const [highlightedId, setHighlightedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   return (
     <>
       <div className="map-wrapper">
-        <ParkingMap parkings={parkings} onHoverChange={setHighlightedId} />
+        <ParkingMap parkings={parkings} selectedId={selectedId} onSelect={setSelectedId} />
       </div>
       <div className="list-wrapper">
         <div className="list-head">
           <h2>Список мест</h2>
           <span className="sort">Сначала новые</span>
         </div>
-        <ParkingList parkings={parkings} highlightedId={highlightedId} />
+        <ParkingList parkings={parkings} selectedId={selectedId} onSelect={setSelectedId} />
       </div>
     </>
   );
