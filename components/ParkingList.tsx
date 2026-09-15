@@ -56,6 +56,18 @@ export default function ParkingList({
           placeholder="Поиск по адресу"
           aria-label="Поиск по адресу"
         />
+        {query && (
+          <button
+            type="button"
+            className="search-clear"
+            onClick={() => setQuery("")}
+            aria-label="Очистить поиск"
+          >
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 4 12 12M12 4 4 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {filtered.length === 0 ? (

@@ -227,7 +227,7 @@ main {
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--surface);
-  padding: 0 14px 0 36px;
+  padding: 0 34px 0 36px;
   font-family: inherit;
   font-size: 13.5px;
   color: var(--text);
@@ -242,6 +242,33 @@ main {
 .search-box input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(180, 87, 60, 0.14);
+}
+
+.search-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.search-clear:hover {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.search-clear svg {
+  width: 11px;
+  height: 11px;
 }
 
 /* ---------- list ---------- */
