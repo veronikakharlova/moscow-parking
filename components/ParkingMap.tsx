@@ -12,9 +12,6 @@ declare global {
   }
 }
 
-// Центр Москвы — используется, если в базе ещё нет ни одной парковки с координатами
-const MOSCOW_CENTER: [number, number] = [55.751244, 37.618423];
-
 const LEAFLET_VERSION = "1.9.4";
 const LEAFLET_CSS = `https://unpkg.com/leaflet@${LEAFLET_VERSION}/dist/leaflet.css`;
 const LEAFLET_JS = `https://unpkg.com/leaflet@${LEAFLET_VERSION}/dist/leaflet.js`;
@@ -49,8 +46,17 @@ export default function ParkingMap({ parkings }: { parkings: ParkingRow[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
 
+  const withCoords = parkings.filter(
+    (p): p is ParkingRow & { lat: number; lng: number } => p.lat !== null && p.lng !== null
+  );
+  const hasCoords = withCoords.length > 0;
+
   useEffect(() => {
     let cancelled = false;
+
+    // Пока в базе нет ни одной парковки с координатами — показывать нечего,
+    // и загружать Leaflet с его тайлами тоже смысла нет
+    if (!hasCoords) return;
 
     loadLeaflet()
       .then(() => {
@@ -70,12 +76,7 @@ export default function ParkingMap({ parkings }: { parkings: ParkingRow[] }) {
           shadowSize: [41, 41],
         });
 
-        const withCoords = parkings.filter(
-          (p): p is ParkingRow & { lat: number; lng: number } =>
-            p.lat !== null && p.lng !== null
-        );
-        const center: [number, number] =
-          withCoords.length > 0 ? [withCoords[0].lat, withCoords[0].lng] : MOSCOW_CENTER;
+        const center: [number, number] = [withCoords[0].lat, withCoords[0].lng];
 
         // attributionControl: false — убираем дефолтную подпись "Leaflet",
         // ниже добавляем свою (только обязательная по правилам OpenStreetMap)
@@ -108,7 +109,28 @@ export default function ParkingMap({ parkings }: { parkings: ParkingRow[] }) {
         mapRef.current = null;
       }
     };
-  }, [parkings]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [parkings, hasCoords]);
+
+  if (!hasCoords) {
+    return (
+      <div className="map-empty">
+        <span className="icon">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M12 2C7.6 2 4 5.6 4 10c0 6 8 12 8 12s8-6 8-12c0-4.4-3.6-8-8-8Z"
+              fill="currentColor"
+            />
+          </svg>
+        </span>
+        <p>
+          Пока нет парковок с координатами.
+          <br />
+          Как только в канале появится пост с адресом, здесь появится карта.
+        </p>
+      </div>
+    );
+  }
 
   return <div ref={containerRef} className="map-container" />;
 }

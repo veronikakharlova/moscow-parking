@@ -1,15 +1,15 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap");
 
 :root {
-  --bg: #fafafa;
+  --bg: #fbfaf8;
   --surface: #ffffff;
   --accent: #b4573c;
   --accent-soft: #f4e9e5;
   --accent-ink: #8a3d29;
   --text: #1a1712;
   --text-muted: #837c76;
-  --border: #ece6e2;
-  --shadow: 0 1px 2px rgba(30, 20, 15, 0.04), 0 6px 16px rgba(30, 20, 15, 0.05);
+  --border: #f1ece7;
+  --shadow: 0 1px 2px rgba(30, 20, 15, 0.03), 0 6px 16px rgba(30, 20, 15, 0.04);
 }
 
 * {
@@ -140,6 +140,44 @@ main {
   width: 100%;
 }
 
+/* ---------- map empty state ---------- */
+.map-empty {
+  height: 60vh;
+  min-height: 320px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 24px;
+  background: #f6f4f1;
+  color: var(--text-muted);
+}
+
+.map-empty .icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  display: grid;
+  place-items: center;
+}
+
+.map-empty .icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.map-empty p {
+  margin: 0;
+  font-size: 13.5px;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
 .list-wrapper {
   flex: 1;
   min-width: 0;
@@ -184,11 +222,12 @@ main {
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  box-shadow: 0 1px 2px rgba(30, 20, 15, 0.02);
   transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .parking-item:hover {
-  border-color: #dec9c0;
+  border-color: #eaddd6;
   box-shadow: var(--shadow);
   transform: translateY(-1px);
 }
@@ -226,8 +265,15 @@ main {
   color: var(--text-muted);
 }
 
-.parking-item a.source-link {
+.card-actions {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  align-self: center;
+}
+
+.parking-item a.source-link {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -239,7 +285,6 @@ main {
   padding: 7px 12px;
   text-decoration: none;
   white-space: nowrap;
-  align-self: center;
 }
 
 .parking-item a.source-link:hover {
@@ -249,6 +294,35 @@ main {
 .parking-item a.source-link svg {
   width: 12px;
   height: 12px;
+}
+
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.share-btn:hover {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  border-color: transparent;
+}
+
+.share-btn svg {
+  width: 13px;
+  height: 13px;
 }
 
 .empty-state {

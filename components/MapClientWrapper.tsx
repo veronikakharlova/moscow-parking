@@ -8,7 +8,7 @@ import type { ParkingRow } from "@/lib/supabaseClient";
 // внутри клиентского компонента — отсюда и этот отдельный файл-обёртка).
 const ParkingMap = dynamic(() => import("./ParkingMap"), {
   ssr: false,
-  loading: () => <div className="map-container" style={{ background: "#eee" }} />,
+  loading: () => <div className="map-container" style={{ background: "#f6f4f1" }} />,
 });
 
 export default function MapClientWrapper({ parkings }: { parkings: ParkingRow[] }) {

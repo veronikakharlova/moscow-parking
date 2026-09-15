@@ -1,4 +1,5 @@
 import type { ParkingRow } from "@/lib/supabaseClient";
+import ShareButton from "./ShareButton";
 
 // Человеко-понятная дата вместо голой временной метки: "сегодня", "вчера",
 // "N дней назад" — так проще на глаз оценить, насколько свежая парковка
@@ -38,20 +39,23 @@ export default function ParkingList({ parkings }: { parkings: ParkingRow[] }) {
             <div className="address">{p.address}</div>
             <div className="meta">Москва · {formatAddedAt(p.created_at)}</div>
           </div>
-          {p.source_url && (
-            <a className="source-link" href={p.source_url} target="_blank" rel="noreferrer">
-              Карта
-              <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                <path
-                  d="M2 10 10 2M10 2H4M10 2v6"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </a>
-          )}
+          <div className="card-actions">
+            <ShareButton address={p.address} url={p.source_url} />
+            {p.source_url && (
+              <a className="source-link" href={p.source_url} target="_blank" rel="noreferrer">
+                Карта
+                <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                  <path
+                    d="M2 10 10 2M10 2H4M10 2v6"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </a>
+            )}
+          </div>
         </li>
       ))}
     </ul>
