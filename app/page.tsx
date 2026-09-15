@@ -1,6 +1,5 @@
 import { getPublicSupabaseClient, type ParkingRow } from "@/lib/supabaseClient";
-import MapClientWrapper from "@/components/MapClientWrapper";
-import ParkingList from "@/components/ParkingList";
+import ParkingExplorer from "@/components/ParkingExplorer";
 
 // Обновляем список при каждом заходе, не кэшируем — данные меняются, когда
 // в канале появляется новый пост
@@ -57,16 +56,7 @@ export default async function HomePage() {
         </div>
       </header>
       <main>
-        <div className="map-wrapper">
-          <MapClientWrapper parkings={parkings} />
-        </div>
-        <div className="list-wrapper">
-          <div className="list-head">
-            <h2>Список мест</h2>
-            <span className="sort">Сначала новые</span>
-          </div>
-          <ParkingList parkings={parkings} />
-        </div>
+        <ParkingExplorer parkings={parkings} />
       </main>
     </>
   );

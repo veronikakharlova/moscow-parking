@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect } from "react";
 import type { ParkingRow } from "@/lib/supabaseClient";
 import ShareButton from "./ShareButton";
 
@@ -14,7 +17,23 @@ function formatAddedAt(iso: string): string {
   return `добавлено ${created.toLocaleDateString("ru-RU", { day: "numeric", month: "long" })}`;
 }
 
-export default function ParkingList({ parkings }: { parkings: ParkingRow[] }) {
+export default function ParkingList({
+  parkings,
+  highlightedId = null,
+}: {
+  parkings: ParkingRow[];
+  highlightedId?: number | null;
+}) {
+  // Когда на карте навели/кликнули на маркер — подкручиваем список так,
+  // чтобы соответствующая карточка была видна
+  useEffect(() => {
+    if (highlightedId == null) return;
+    document.getElementById(`parking-item-${highlightedId}`)?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    });
+  }, [highlightedId]);
+
   if (parkings.length === 0) {
     return (
       <p className="empty-state">
@@ -26,7 +45,11 @@ export default function ParkingList({ parkings }: { parkings: ParkingRow[] }) {
   return (
     <ul className="parking-list">
       {parkings.map((p) => (
-        <li key={p.id} className="parking-item">
+        <li
+          key={p.id}
+          id={`parking-item-${p.id}`}
+          className={`parking-item${p.id === highlightedId ? " is-active" : ""}`}
+        >
           <span className="icon">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path

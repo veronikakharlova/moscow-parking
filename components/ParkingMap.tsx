@@ -42,7 +42,15 @@ function loadLeaflet(): Promise<void> {
   return leafletLoadingPromise;
 }
 
-export default function ParkingMap({ parkings }: { parkings: ParkingRow[] }) {
+export default function ParkingMap({
+  parkings,
+  onHoverChange,
+}: {
+  parkings: ParkingRow[];
+  // Сообщает наружу, какая парковка сейчас под курсором/выбрана на карте —
+  // используется, чтобы подсветить ту же карточку в списке справа
+  onHoverChange?: (id: number | null) => void;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
 
@@ -97,8 +105,16 @@ export default function ParkingMap({ parkings }: { parkings: ParkingRow[] }) {
             ? `<b>${escapeHtml(p.address)}</b><br/><a href="${p.source_url}" target="_blank" rel="noreferrer">Открыть на карте →</a>`
             : `<b>${escapeHtml(p.address)}</b>`;
 
-          L.marker([p.lat, p.lng], { icon }).addTo(map).bindPopup(popupHtml);
+          const marker = L.marker([p.lat, p.lng], { icon }).addTo(map).bindPopup(popupHtml);
+
+          // Навели курсор на маркер или кликнули по нему — подсвечиваем
+          // ту же парковку в списке справа
+          marker.on("mouseover", () => onHoverChange?.(p.id));
+          marker.on("mouseout", () => onHoverChange?.(null));
+          marker.on("click", () => onHoverChange?.(p.id));
         });
+
+        map.on("popupclose", () => onHoverChange?.(null));
       })
       .catch((err) => console.error(err));
 
