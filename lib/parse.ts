@@ -22,6 +22,50 @@ function extractUrl(text: string): string | null {
   return match ? match[0].replace(/[),.]+$/, "") : null;
 }
 
+// Если в посте есть ссылка, но она ведёт не на карту (например форма
+// обратной связи, анонс с любой другой ссылкой) — это точно не пост с
+// парковкой, парсер такое пропускает (см. isMapUrl ниже), даже если рядом
+// есть какой-то текст.
+//
+// На голом google.com / yandex.ru живёт много другого — формы, диск,
+// документы, — поэтому их засчитываем картой только если путь ведёт в
+// раздел /maps (docs.google.com/forms/... не должен пройти как карта).
+const MAP_ONLY_HOSTS = [
+  "goo.gl",
+  "maps.app.goo.gl",
+  "2gis.ru",
+  "2gis.com",
+  "openstreetmap.org",
+  "osm.org",
+];
+const MAPS_SECTION_HOSTS = ["google.com", "google.ru", "yandex.ru"];
+
+/** Похож ли ссылка на сервис карт (Яндекс/Google/2ГИС/OSM). */
+function isMapUrl(url: string): boolean {
+  try {
+    const u = new URL(url);
+    const host = u.host.toLowerCase();
+    const path = u.pathname.toLowerCase();
+
+    if (MAP_ONLY_HOSTS.some((h) => host === h || host.endsWith(`.${h}`))) return true;
+
+    // поддомен maps.* — однозначно карта (maps.yandex.ru, maps.google.com)
+    if (host.startsWith("maps.")) return true;
+
+    // корневой домен — только если это именно раздел /maps
+    if (
+      MAPS_SECTION_HOSTS.some((h) => host === h || host.endsWith(`.${h}`)) &&
+      path.startsWith("/maps")
+    ) {
+      return true;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 /** Пытается достать координаты прямо из URL карт (без обращения к сети). */
 function extractCoordsFromUrl(url: string): { lat: number; lng: number } | null {
   try {
@@ -126,6 +170,11 @@ export async function parseParkingPost(rawText: string): Promise<ParsedPost | nu
   if (!text) return null;
 
   const url = extractUrl(text);
+
+  // Ссылка есть, но ведёт не на карту — значит это не пост с парковкой
+  // (форма, анонс, что угодно ещё), пропускаем, не пытаясь ничего добавить
+  if (url && !isMapUrl(url)) return null;
+
   const address = (url ? text.replace(url, "") : text)
     .replace(/\s+/g, " ")
     .trim();
