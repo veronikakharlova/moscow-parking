@@ -57,6 +57,7 @@ export default function ParkingMap({
   const mapRef = useRef<any>(null);
   const markersRef = useRef<Map<number, any>>(new Map());
   const selectedIdRef = useRef<number | null>(selectedId);
+  const userMarkerRef = useRef<any>(null);
 
   const withCoords = parkings.filter(
     (p): p is ParkingRow & { lat: number; lng: number } => p.lat !== null && p.lng !== null
@@ -106,6 +107,59 @@ export default function ParkingMap({
         }).setView(center, 11);
         mapRef.current = map;
         L.control.attribution({ prefix: false }).addTo(map);
+
+        // Кнопка "где я" — своя, не встроенная в Leaflet: по клику спрашивает
+        // геолокацию у браузера (это системный запрос, показывает сам
+        // браузер/телефон) и рисует синюю точку с пульсацией на карте.
+        // Добавляем ДО зум-контрола, чтобы в стопке правого нижнего угла
+        // она оказалась выше него.
+        const LocateControl = L.Control.extend({
+          options: { position: "bottomright" },
+          onAdd: function () {
+            const container = L.DomUtil.create("div", "locate-control");
+            const button = L.DomUtil.create("button", "", container);
+            button.type = "button";
+            button.setAttribute("aria-label", "Показать моё местоположение");
+            button.innerHTML =
+              '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true">' +
+              '<circle cx="10" cy="10" r="2.6" fill="currentColor"/>' +
+              '<path d="M10 1.5V4.2M10 15.8V18.5M18.5 10H15.8M4.2 10H1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
+              "</svg>";
+            L.DomEvent.disableClickPropagation(container);
+            L.DomEvent.on(button, "click", () => {
+              if (!navigator.geolocation) return;
+              navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                  const { latitude, longitude } = pos.coords;
+                  if (userMarkerRef.current) {
+                    userMarkerRef.current.setLatLng([latitude, longitude]);
+                  } else {
+                    const userIcon = L.divIcon({
+                      className: "",
+                      html: '<div class="user-location-marker"></div>',
+                      iconSize: [14, 14],
+                      iconAnchor: [7, 7],
+                    });
+                    userMarkerRef.current = L.marker([latitude, longitude], {
+                      icon: userIcon,
+                      zIndexOffset: 1000,
+                      interactive: false,
+                    }).addTo(map);
+                  }
+                  map.setView([latitude, longitude], Math.max(map.getZoom(), 15));
+                  button.classList.add("is-active");
+                },
+                (err) => {
+                  console.error("Не удалось определить местоположение", err);
+                },
+                { enableHighAccuracy: true, timeout: 8000 }
+              );
+            });
+            return container;
+          },
+        });
+        new LocateControl().addTo(map);
+
         L.control.zoom({ position: "bottomright" }).addTo(map);
 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -142,6 +196,7 @@ export default function ParkingMap({
     return () => {
       cancelled = true;
       markersRef.current.clear();
+      userMarkerRef.current = null;
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
