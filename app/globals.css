@@ -531,6 +531,13 @@ main {
     right: 12px;
   }
 
+  /* на мобильном чип с названием — на всю ширину экрана (те же отступы,
+     что у шторки снизу), счётчик уходит на отдельную строку под ним */
+  .brand {
+    width: 100%;
+    max-width: none;
+  }
+
   .side-panel {
     top: auto;
     left: 12px;
@@ -541,8 +548,10 @@ main {
     padding: 0;
     border-radius: 22px 22px 0 0;
     /* высоту в свёрнутом/развёрнутом состоянии выставляет JS (ParkingExplorer),
-       220px здесь — на случай если скрипт ещё не отработал */
-    height: 220px;
+       130px здесь — на случай если скрипт ещё не отработал. В свёрнутом
+       виде показываем только поиск, поэтому шторка короткая и не
+       залезает под шапку даже в развёрнутом состоянии */
+    height: 130px;
     transition: height 0.32s cubic-bezier(0.32, 0.72, 0, 1);
   }
 
@@ -550,39 +559,26 @@ main {
     transition: none;
   }
 
+  /* сама ручка — одновременно область для перетаскивания и стрелочка,
+     без отдельной "линии": область нажатия шире пальца (48px) */
   .sheet-handle {
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
     flex-shrink: 0;
-    padding: 10px 0 6px;
     cursor: grab;
     touch-action: none;
   }
 
-  .sheet-handle .bar {
-    width: 34px;
-    height: 4px;
-    border-radius: 999px;
-    background: var(--border);
-  }
-
-  /* стрелочка над шторкой — как в Яндекс.Картах: без подложки, просто "птичка" */
   .sheet-chevron {
-    position: absolute;
-    top: -30px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 44px;
-    height: 30px;
+    width: 64px;
+    height: 40px;
     border: none;
     background: transparent;
     display: grid;
     place-items: center;
     cursor: pointer;
     color: var(--text-muted);
-    filter: drop-shadow(0 1px 2px rgba(30, 20, 15, 0.35));
   }
 
   .sheet-chevron svg {
@@ -601,9 +597,9 @@ main {
   }
 
   /* дефолтный зум-контрол и кнопка геолокации — поднимаем над свёрнутой
-     шторкой (220px), иначе она их закрывает */
+     шторкой (130px), иначе она их закрывает */
   .leaflet-bottom.leaflet-right {
-    bottom: calc(220px + env(safe-area-inset-bottom, 0px) + 12px);
+    bottom: calc(130px + env(safe-area-inset-bottom, 0px) + 12px);
     right: 12px;
   }
 }

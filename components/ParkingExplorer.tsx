@@ -13,12 +13,13 @@ const ParkingMap = dynamic(() => import("./ParkingMap"), {
   loading: () => <div className="map-container" style={{ background: "#f6f4f1" }} />,
 });
 
-// Высота свёрнутой шторки на мобильном — под неё же подстраивается
-// положение зум-контрола карты (см. globals.css)
-const SHEET_PEEK_HEIGHT = 220;
-// Насколько ниже верхнего края экрана останавливается развёрнутая шторка,
-// чтобы сверху оставалась видна полоска карты
-const SHEET_FULL_MARGIN = 110;
+// Высота свёрнутой шторки на мобильном — в этом состоянии виден только
+// поиск, без списка, поэтому шторка короткая (под неё же подстраивается
+// положение зум-контрола карты, см. globals.css)
+const SHEET_PEEK_HEIGHT = 130;
+// Насколько ниже верхнего края экрана останавливается развёрнутая шторка —
+// с запасом, чтобы не заезжать под шапку (чип + счётчик под ним)
+const SHEET_FULL_MARGIN = 140;
 
 function isMobileViewport() {
   return typeof window !== "undefined" && window.matchMedia("(max-width: 760px)").matches;
@@ -36,10 +37,25 @@ export default function ParkingExplorer({ parkings }: { parkings: ParkingRow[] }
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [query, setQuery] = useState("");
 
-  // Мобильная шторка со списком: "peek" — свёрнута (видно поиск и
-  // примерно полтора адреса, карта открыта), "full" — развёрнута почти
-  // на весь экран. На десктопе эти состояния ни на что не влияют —
-  // .side-panel там позиционируется как обычно, высоту задаёт CSS.
+  // На десктопе список в шторке виден всегда; на мобильном — только когда
+  // шторка развёрнута (в свёрнутом виде показываем только поиск).
+  // Дефолт false безопасен для серверного рендера — после монтирования
+  // JS сам уточнит по matchMedia.
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    function checkViewport() {
+      setIsMobile(window.matchMedia("(max-width: 760px)").matches);
+    }
+    checkViewport();
+    window.addEventListener("resize", checkViewport);
+    return () => window.removeEventListener("resize", checkViewport);
+  }, []);
+
+  // Мобильная шторка со списком: "peek" — свёрнута (виден только поиск,
+  // карта открыта), "full" — развёрнута почти на весь экран, виден список.
+  // На десктопе эти состояния ни на что не влияют — .side-panel там
+  // позиционируется как обычно, высоту задаёт CSS, список виден всегда.
   const [sheetState, setSheetState] = useState<"peek" | "full">("peek");
   const [sheetDragging, setSheetDragging] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -124,7 +140,6 @@ export default function ParkingExplorer({ parkings }: { parkings: ParkingRow[] }
           onPointerUp={handleHandlePointerUp}
           onPointerCancel={handleHandlePointerUp}
         >
-          <span className="bar" />
           <button
             type="button"
             className="sheet-chevron"
@@ -182,9 +197,11 @@ export default function ParkingExplorer({ parkings }: { parkings: ParkingRow[] }
               )}
             </div>
           ) : (
-            <div className="rows">
-              <ParkingList parkings={parkings} selectedId={selectedId} onSelect={setSelectedId} />
-            </div>
+            (!isMobile || sheetState === "full") && (
+              <div className="rows">
+                <ParkingList parkings={parkings} selectedId={selectedId} onSelect={setSelectedId} />
+              </div>
+            )
           )}
         </div>
       </div>
