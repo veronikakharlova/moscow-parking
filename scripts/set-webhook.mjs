@@ -42,7 +42,10 @@ const res = await fetch(apiUrl, {
   body: JSON.stringify({
     url: webhookUrl,
     secret_token: TELEGRAM_WEBHOOK_SECRET,
-    allowed_updates: ["channel_post"],
+    // channel_post — новые посты в канале; message — личные сообщения боту
+    // (пересланный пост = запрос на удаление парковки); callback_query — нажатия
+    // на кнопки "Да, удалить" / "Отмена"
+    allowed_updates: ["channel_post", "message", "callback_query"],
   }),
 });
 
