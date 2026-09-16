@@ -57,6 +57,14 @@ export default async function HomePage() {
       </header>
       <main>
         <ParkingExplorer parkings={parkings} />
+        <a
+          className="site-credit"
+          href="https://t.me/Nika_Kharlova"
+          target="_blank"
+          rel="noreferrer"
+        >
+          by Вероника Харлова
+        </a>
       </main>
     </>
   );

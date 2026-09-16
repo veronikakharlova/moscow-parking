@@ -184,7 +184,7 @@ export default function ParkingExplorer({ parkings }: { parkings: ParkingRow[] }
             </div>
           ) : (
             <div className="rows">
-              <ParkingList parkings={parkings} selectedId={selectedId} onSelect={setSelectedId} />
+              <ParkingList parkings={parkings} selectedId={selectedId} onSelect={setSelectedId} footer />
             </div>
           )}
         </div>

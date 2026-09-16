@@ -22,10 +22,14 @@ export default function ParkingList({
   parkings,
   selectedId = null,
   onSelect,
+  footer = false,
 }: {
   parkings: ParkingRow[];
   selectedId?: number | null;
   onSelect?: (id: number | null) => void;
+  // Показать подпись с контактом внизу списка — только для основного
+  // списка (не для результатов поиска, там это было бы лишним)
+  footer?: boolean;
 }) {
   if (parkings.length === 0) {
     return (
@@ -36,8 +40,9 @@ export default function ParkingList({
   }
 
   return (
-    <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-      {parkings.map((p) => {
+    <>
+      <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+        {parkings.map((p) => {
         const isActive = p.id === selectedId;
         return (
           <li
@@ -88,8 +93,17 @@ export default function ParkingList({
               )}
             </div>
           </li>
-        );
-      })}
-    </ul>
+          );
+        })}
+      </ul>
+      {footer && (
+        <div className="list-footer">
+          <span>Техническая поддержка</span>
+          <a href="https://t.me/Nika_Kharlova" target="_blank" rel="noreferrer">
+            Вероника Харлова
+          </a>
+        </div>
+      )}
+    </>
   );
 }
