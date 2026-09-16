@@ -125,26 +125,6 @@ main {
   z-index: 0;
 }
 
-/* Едва заметная подпись автора поверх карты, в левом нижнем углу —
-   зеркально обязательной подписи "© OpenStreetMap" в правом нижнем.
-   На мобильном (см. медиа-запрос ниже) поднимаем над свёрнутой шторкой */
-.site-credit {
-  position: absolute;
-  left: 20px;
-  bottom: 20px;
-  z-index: 5;
-  font-size: 10.5px;
-  font-weight: 500;
-  color: rgba(26, 23, 18, 0.35);
-  text-decoration: none;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.7);
-  transition: color 0.15s ease;
-}
-
-.site-credit:hover {
-  color: rgba(26, 23, 18, 0.6);
-}
-
 /* Дефолтный зум-контрол Leaflet — раньше сидел в левом верхнем углу и
    наезжал на плавающий чип с названием сайта. Переносим его в правый
    нижний угол (там ничего нет) и оформляем в том же стиле, что и
@@ -647,12 +627,5 @@ main {
   .leaflet-bottom.leaflet-right {
     bottom: calc(130px + env(safe-area-inset-bottom, 0px) + 12px);
     right: 12px;
-  }
-
-  /* подпись автора — туда же, но слева: на мобильном шторка стоит вплотную
-     к нижнему краю (bottom: 0), без этого подпись была бы всегда под ней */
-  .site-credit {
-    left: 12px;
-    bottom: calc(130px + env(safe-area-inset-bottom, 0px) + 12px);
   }
 }
