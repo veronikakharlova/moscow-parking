@@ -97,13 +97,16 @@ export default function ParkingMap({
         const center: [number, number] = [withCoords[0].lat, withCoords[0].lng];
 
         // attributionControl: false — убираем дефолтную подпись "Leaflet",
-        // ниже добавляем свою (только обязательная по правилам OpenStreetMap)
-        const map = L.map(containerRef.current, { attributionControl: false }).setView(
-          center,
-          11
-        );
+        // ниже добавляем свою (только обязательная по правилам OpenStreetMap).
+        // zoomControl: false — дефолтный контрол в углу перекрывался плавающим
+        // чипом с названием сайта, добавляем его ниже уже в другом углу.
+        const map = L.map(containerRef.current, {
+          attributionControl: false,
+          zoomControl: false,
+        }).setView(center, 11);
         mapRef.current = map;
         L.control.attribution({ prefix: false }).addTo(map);
+        L.control.zoom({ position: "bottomright" }).addTo(map);
 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
