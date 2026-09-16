@@ -9,6 +9,22 @@
 
 const URL_REGEX = /https?:\/\/[^\s]+/i;
 
+// Хост собственного сайта — посты, которые просто анонсируют/упоминают сайт
+// (даже без "https://" перед ссылкой, как бывает при скрытой telegram-ссылке,
+// когда в тексте виден только текст, а сама ссылка — в entity, которую сюда
+// не передают), это точно не адрес парковки, а не просто "ссылка не на карту".
+const FALLBACK_OWN_SITE_HOST = "moscow-parking-five.vercel.app";
+
+function getOwnSiteHost(): string | null {
+  const raw = process.env.SITE_URL;
+  if (!raw) return FALLBACK_OWN_SITE_HOST;
+  try {
+    return new URL(raw).host.toLowerCase();
+  } catch {
+    return FALLBACK_OWN_SITE_HOST;
+  }
+}
+
 export type ParsedPost = {
   address: string;
   sourceUrl: string | null;
@@ -168,6 +184,11 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lng: numb
 export async function parseParkingPost(rawText: string): Promise<ParsedPost | null> {
   const text = rawText.trim();
   if (!text) return null;
+
+  // Пост про сам сайт (анонс, апдейт, что угодно с упоминанием домена) —
+  // не парковка, пропускаем до попытки выделить адрес и ссылку
+  const ownHost = getOwnSiteHost();
+  if (ownHost && text.toLowerCase().includes(ownHost)) return null;
 
   const url = extractUrl(text);
 
