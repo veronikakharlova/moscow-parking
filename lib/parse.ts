@@ -124,6 +124,39 @@ function extractCoordsFromUrl(url: string): { lat: number; lng: number } | null 
 }
 
 /**
+ * Страницы организаций на Яндекс.Картах (yandex.ru/maps/org/.../ID) не кладут
+ * координаты ни в саму ссылку, ни в её редирект — только внутрь HTML, в
+ * служебную ссылку на "настройки" (retpath со старым центром карты). Ищем
+ * "ll=<lon>,<lat>" прямо в тексте страницы, независимо от уровня
+ * URL-кодирования (там попадается и "%2C", и "%252C").
+ */
+async function extractCoordsFromPage(url: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+
+    const res = await fetch(url, {
+      redirect: "follow",
+      signal: controller.signal,
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; MoscowParkingBot/1.0)" },
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return null;
+
+    const html = await res.text();
+    const match = html.match(/ll(?:=|%3D|%253D)(-?\d+\.\d+)(?:,|%2C|%252C)(-?\d+\.\d+)/i);
+    if (match) {
+      const lng = Number(match[1]);
+      const lat = Number(match[2]);
+      if (isFinite(lat) && isFinite(lng)) return { lat, lng };
+    }
+  } catch {
+    // страница не открылась / без нужного паттерна — не страшно, ниже есть geocode-фолбэк
+  }
+  return null;
+}
+
+/**
  * Короткие ссылки (например yandex.ru/maps/-/xxxxx) не содержат координат —
  * их нужно "раскрыть", перейдя по редиректу, и уже там поискать ll=.
  * Делаем это только для доменов карт, с таймаутом, без падения при ошибке.
@@ -209,6 +242,11 @@ export async function parseParkingPost(rawText: string): Promise<ParsedPost | nu
     if (!coords) {
       const resolvedUrl = await resolveShortMapUrl(url);
       if (resolvedUrl !== url) coords = extractCoordsFromUrl(resolvedUrl);
+    }
+    // Ни в самой ссылке, ни в редиректе координат нет (типично для страниц
+    // организаций/мест на Яндекс.Картах) — пробуем достать их из HTML страницы
+    if (!coords) {
+      coords = await extractCoordsFromPage(url);
     }
   }
 
