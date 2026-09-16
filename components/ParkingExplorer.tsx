@@ -37,25 +37,10 @@ export default function ParkingExplorer({ parkings }: { parkings: ParkingRow[] }
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [query, setQuery] = useState("");
 
-  // На десктопе список в шторке виден всегда; на мобильном — только когда
-  // шторка развёрнута (в свёрнутом виде показываем только поиск).
-  // Дефолт false безопасен для серверного рендера — после монтирования
-  // JS сам уточнит по matchMedia.
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    function checkViewport() {
-      setIsMobile(window.matchMedia("(max-width: 760px)").matches);
-    }
-    checkViewport();
-    window.addEventListener("resize", checkViewport);
-    return () => window.removeEventListener("resize", checkViewport);
-  }, []);
-
-  // Мобильная шторка со списком: "peek" — свёрнута (виден только поиск,
-  // карта открыта), "full" — развёрнута почти на весь экран, виден список.
-  // На десктопе эти состояния ни на что не влияют — .side-panel там
-  // позиционируется как обычно, высоту задаёт CSS, список виден всегда.
+  // Мобильная шторка со списком: "peek" — свёрнута (виден поиск и краешек
+  // первого адреса — знак, что ниже есть список), "full" — развёрнута почти
+  // на весь экран. На десктопе эти состояния ни на что не влияют —
+  // .side-panel там позиционируется как обычно, высоту задаёт CSS.
   const [sheetState, setSheetState] = useState<"peek" | "full">("peek");
   const [sheetDragging, setSheetDragging] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -168,6 +153,7 @@ export default function ParkingExplorer({ parkings }: { parkings: ParkingRow[] }
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => snapSheetTo("full")}
               placeholder="Поиск по адресу"
               aria-label="Поиск по адресу"
             />
@@ -197,11 +183,9 @@ export default function ParkingExplorer({ parkings }: { parkings: ParkingRow[] }
               )}
             </div>
           ) : (
-            (!isMobile || sheetState === "full") && (
-              <div className="rows">
-                <ParkingList parkings={parkings} selectedId={selectedId} onSelect={setSelectedId} />
-              </div>
-            )
+            <div className="rows">
+              <ParkingList parkings={parkings} selectedId={selectedId} onSelect={setSelectedId} />
+            </div>
           )}
         </div>
       </div>
